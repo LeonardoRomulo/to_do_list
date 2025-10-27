@@ -6,15 +6,31 @@ class UsuarioController {
     static async criarUsuario(req, res) {
         try {
             const { nome, email, senha } = req.body;
+
+
+            //validação vem aqui de nome, email e senha
+
+            if (!nome || typeof nome !== 'string') {
+                return res.status(400).josn({ message: "O nome só pode conter letras " });
+            }
+
+            if (!email || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}(\.[^\s@]{2,})?$/.test(email.trim())){
+                return res.status(400).json({message:"Email inválido"});
+            }
+
+            if (!senha || typeof senha !== 'string' || !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(senha.trim())){
+                return res.status(400).json({message: "Senha inválida"});
+            }
+            
             const senhaHash = await bcrypt.hash(senha, 10);
             const usuario = new Usuario(nome, email, senhaHash);
 
             const query = 'INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)';
             await conexao.query(query, [usuario.nome, usuario.email, usuario.senha]);
 
-            return res.status(201).json({id:result.insertId, message: "Usuário cadastrado com sucesso" });
+            return res.status(201).json({ id: result.insertId, message: "Usuário cadastrado com sucesso" });
         } catch (err) {
-            return res.status(400).json({message: err.message});
+            return res.status(400).json({ message: err.message });
         }
     }
 
@@ -30,7 +46,7 @@ class UsuarioController {
 
     static async atualizarUsuario(req, res) {
         try {
-            const{id} = req.params.id;
+            const { id } = req.params.id;
 
         } catch (err) {
 
